@@ -2,7 +2,7 @@
 # Requires `pip install pync`
 
 import os
-import datetime
+from datetime import datetime, timedelta, UTC
 import weechat
 from pync import Notifier
 
@@ -58,11 +58,11 @@ def notify(data, buffer, date, tags, displayed, highlight, prefix, message):
 
 	# Ignore messages older than the configured theshold (such as ZNC logs) if enabled
 	if weechat.config_get_plugin('ignore_old_messages') == 'on':
-		message_time = datetime.datetime.utcfromtimestamp(int(date))
-		now_time = datetime.datetime.utcnow()
+		message_time = datetime.fromtimestamp(int(date), UTC)
+		cutoff_time = datetime.now(UTC) + timedelta(seconds=-5)
 
 		# Ignore if the message is greater than 5 seconds old
-		if (now_time - message_time).seconds > 5:
+		if message_time < cutoff_time:
 			return weechat.WEECHAT_RC_OK
 
 	# Passing `None` or `''` still plays the default sound so we pass a lambda instead
