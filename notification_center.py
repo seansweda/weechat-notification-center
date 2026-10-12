@@ -31,6 +31,8 @@ DEFAULT_OPTIONS = {
 	'activate_bundle_id': 'com.apple.Terminal',
 	'ignore_old_messages': 'off',
 	'ignore_current_buffer_messages': 'off',
+	'ignore_prefix': '',
+	'ignore_nicks': '',
 	'channels': '',
 	'tags': '',
 }
@@ -66,6 +68,16 @@ def notify(data, buffer, date, tags, displayed, highlight, prefix, message):
 	# Passing `None` or `''` still plays the default sound so we pass a lambda instead
 	sound = weechat.config_get_plugin('sound_name') if weechat.config_get_plugin('sound') == 'on' else lambda:_
 	activate_bundle_id = weechat.config_get_plugin('activate_bundle_id')
+
+	# ignore sender matching prefix (e.g. '*' to ignore ZNC *status)
+	ignore = weechat.config_get_plugin('ignore_prefix')
+	if ignore != '' and prefix.startswith(ignore):
+		return weechat.WEECHAT_RC_OK
+
+	# ignore matching senders
+	ignore = weechat.config_get_plugin('ignore_nicks')
+	if prefix in ignore.split(','):
+		return weechat.WEECHAT_RC_OK
 
 	channel_allow_list = []
 	if weechat.config_get_plugin('channels') != "":
